@@ -1,0 +1,52 @@
+<!DOCTYPE html><html lang="en" class="antialiased box-border"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="icon" href="/favicon.ico"><title>Clearing all postgres tables for tests</title><meta name="keywords" content="blog, personal, technology, programming, Kristian Rekstad"><meta name="description" content="A personal blog"><meta name="author" content="Kristian Rekstad"><meta property="og:title" content="Clearing all postgres tables for tests"><meta property="og:description" content="A personal blog"><meta property="og:locale" content="en"><meta property="og:site_name" content="Kristian's website"><meta property="og:type" content="article"><meta property="article:published_time" content="2025-06-12T15:15:15.000Z"><script type="application/ld+json">{
+"description": "A personal blog",
+"author": { "@type": "Person", "name": "Kristian Rekstad" },
+"@type": "BlogPosting",
+"url": "https://krex.no/clearing-all-postgres-tables-for-tests/",
+"publisher": {
+"@type": "Organization",
+"logo": {
+"@type": "ImageObject",
+"url": "https://krex.no/assets/images/logo.png"
+},
+"name": "Kristian Rekstad"
+},
+"headline": "Clearing all postgres tables for tests",
+"datePublished": "2025-06-12T15:15:15.000Z",
+"mainEntityOfPage": {
+"@type": "WebPage",
+"@id": "https://krex.no/clearing-all-postgres-tables-for-tests/"
+},
+"@context": "http://schema.org"
+}</script><link href="/assets/styles/main.30d21f798371f332d884.css" rel="stylesheet"><link rel="manifest" href="/site.webmanifest"><script type="text/javascript">var _paq=window._paq=window._paq||[];_paq.push(["setRequestMethod","POST"]),_paq.push(["setSecureCookie",!0]),_paq.push(["trackPageView"]),_paq.push(["enableHeartBeatTimer"]),_paq.push(["trackVisibleContentImpressions",!0,750]),_paq.push(["addDownloadExtensions","json"]),_paq.push(["enableLinkTracking"]),function(){var e="//stats.krex.no/",a=(_paq.push(["setTrackerUrl",e+"js/"]),_paq.push(["setSiteId","1"]),document),s=a.createElement("script"),a=a.getElementsByTagName("script")[0];s.type="text/javascript",s.async=!0,s.src=e+"js",a.parentNode.insertBefore(s,a)}()</script></head><body class="font-sans flex flex-col min-h-screen w-full"><noscript><p><img class="nolazy" src="//stats.krex.no/js/?idsite=1&amp;rec=1" style="border:0;" alt=""></p></noscript><nav class="flex-initial p-4 mb-8 bg-indigo-600 text-white flex flex-wrap items-center border-b"><a href="/" class="flex text-white no-underline items-center flex-shrink-0"><img class="self-start h-8 w-8 mr-2 lazyload" src="/assets/images/logo.png" alt="logo" data-src="/assets/images/logo.png"><h1 class="text-xl font-semibold tracking-tight">Kristian's Website</h1></a></nav><main class="flex-auto sm:mw-2/3 mx-5 sm:mx-auto"><article class="post"><header><h1 class="font-normal text-3xl font-serif">Clearing all postgres tables for tests</h1><div class="text-gray-600">June 12, 2025</div></header><section class="pt-3 pb-3 prose font-serif mx-auto"><p>Have you written acceptance tests or integrations tests in Java/Kotlin using <a href="https://testcontainers.com/modules/postgresql/" target="_blank" rel="noopener noreferrer">Testcontainers Postgresql</a>, and you reuse the container across tests to save time? Then you likely want to clear the database to avoid contamination between tests.</p><p>Here is a small code snippet to clear postgres tables (except flyway migrations). It uses <a href="https://jdbi.org/" target="_blank" rel="noopener noreferrer">Jdbi</a> to execute the SQL.</p><pre class="language-kotlin"><code class="language-kotlin">jdbi<span class="token punctuation">.</span>useHandle<span class="token operator">&lt;</span>Exception<span class="token operator">&gt;</span> <span class="token punctuation">{</span> handle <span class="token operator">-&gt;</span><br>    handle<span class="token punctuation">.</span><span class="token function">execute</span><span class="token punctuation">(</span><br>        <span class="token string-literal multiline"><span class="token string">"""DO </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span><span class="token expression"><span class="token char">'$'</span></span><span class="token interpolation-punctuation punctuation">}</span></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span><span class="token expression"><span class="token char">'$'</span></span><span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">DECLARE tablename TEXT;<br>  BEGIN<br>      FOR tablename IN (SELECT table_name<br>                         FROM information_schema.tables<br>                         WHERE table_schema = 'public'<br>                           AND table_type = 'BASE TABLE'<br>                           AND table_catalog = '</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span><span class="token expression">testDatabaseName</span><span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">'<br>                           AND table_name not like 'flyway%')<br>      LOOP<br>          EXECUTE 'TRUNCATE TABLE ' || tablename || ' RESTART IDENTITY CASCADE;';<br>      END LOOP;<br>  END</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span><span class="token expression"><span class="token char">'$'</span></span><span class="token interpolation-punctuation punctuation">}</span></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span><span class="token expression"><span class="token char">'$'</span></span><span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">;"""</span></span><span class="token punctuation">,</span><br>    <span class="token punctuation">)</span><br>  <span class="token punctuation">}</span></code></pre><p>Put this in a function like <code>fun clearAllData() { ... }</code>, and run it in Junit's <code>beforeEach</code> or <code>afterEach</code>.</p></section><footer class="mb-12 mt-2 pt-2 border-t"><a href="/">Back to home</a></footer></article></main><script>
+            (function (selector, src, preferNativeLazyLoad) {
+  var images = document.querySelectorAll(selector);
+  var numImages = images.length;
+
+  if (numImages > 0) {
+    if (preferNativeLazyLoad && 'loading' in HTMLImageElement.prototype) {
+      for (var i = 0; i < numImages; i++) {
+        var keys = ['src', 'srcset'];
+
+        for (var j = 0; j < keys.length; j++) {
+          if (images[i].hasAttribute('data-' + keys[j])) {
+            var value = images[i].getAttribute('data-' + keys[j]);
+            images[i].setAttribute(keys[j], value);
+          }
+        }
+      }
+
+      return;
+    }
+
+    var script = document.createElement('script');
+    script.async = true;
+    script.src = src;
+    document.body.appendChild(script);
+  }
+})(
+              'img:not(.nolazy)',
+              'https://cdn.jsdelivr.net/npm/lazysizes@5/lazysizes.min.js',
+              false
+            );
+          </script></body></html>

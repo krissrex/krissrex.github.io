@@ -34,6 +34,14 @@
 </url>
 
 <url>
+<loc>https://krex.no/creating-aws-resources-with-localstack-and-docker-compose/</loc>
+</url>
+
+<url>
+<loc>https://krex.no/kotlin-value-classes-and-mangled-handlebars-viewmodels/</loc>
+</url>
+
+<url>
 <loc>https://krex.no/404.html</loc>
 </url>
 
@@ -42,11 +50,7 @@
 </url>
 
 <url>
-<loc>https://krex.no/creating-aws-resources-with-localstack-and-docker-compose/</loc>
-</url>
-
-<url>
-<loc>https://krex.no/kotlin-value-classes-and-mangled-handlebars-viewmodels/</loc>
+<loc>https://krex.no/clearing-all-postgres-tables-for-tests/</loc>
 </url>
 
 </urlset>
