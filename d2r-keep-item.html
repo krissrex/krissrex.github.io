@@ -1,0 +1,2828 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8"/>
+        <title>D2R Keep Item</title>
+        <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+        <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+        <!-- Don't use this in production: -->
+        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+        <!-- For fuzzy searching https://fusejs.io/ -->
+        <script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.js"></script>
+
+        <style>
+            td {
+                border: 1px solid gray;
+            }
+            .item-keep {
+                background: lightgreen;
+            }
+            .item-lowtier {
+                background: lightyellow;
+            }
+            .item-trash {
+                background: #ffd6d6;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="root"></div>
+        <script type="text/babel">
+            
+    function MyApp() {
+        const [txt, setTxt] = React.useState("");
+        const searchResult = React.useMemo(() => window.items.search(txt).map(item => item.item) || [], [txt]);
+        const resultByTier = {};
+        searchResult.forEach(item => {
+            const list = resultByTier[item.tier] || [];
+            list.push(item);
+            resultByTier[item.tier] = list;
+        });          
+
+        return (<div>
+            <input autoFocus value={txt} onChange={e => {setTxt(e.target.value);} } onBlur={e => setTxt("")} />
+            {
+                (txt != "") && <div>Looking for {txt}: {searchResult.length} results</div>
+            }
+            
+            <div>
+                <h2>Keep</h2>
+                <table>
+                    <tbody>
+                        { Object.keys(resultByTier)
+                            .sort()
+                            .filter(tier => tier != "1000")
+                            .map(tier => resultByTier[tier] || [])
+                            .filter(list => list.length > 0)
+                            .flatMap(items => 
+                                items.map(item => {
+                                    console.log(item);
+                                    return (<tr key={item.name} className={item.tier == 9 ? "item-lowtier" : "item-keep"}><td>{item.name}</td><td>{window.itemTiers[item.tier]}</td><td>{item.description}</td></tr>);
+                                    })
+                            ) 
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div>
+                <h2>Trash</h2>
+                <table>
+                    <tbody>
+                        { Object.keys(resultByTier)
+                            .filter(tier => tier == "1000")
+                            .map(tier => resultByTier[tier] || [])
+                            .filter(list => list.length > 0)
+                            .flatMap(items => 
+                                items.map(item => {
+                                    console.log(item);
+                                    return (<tr key={item.name} className="item-trash"><td>{item.name}</td><td>{window.itemTiers[item.tier]}</td></tr>);
+                                    })
+                            ) 
+                        }
+                    </tbody>
+                </table>
+            </div>
+            
+            </div>);
+      }
+
+      const container = document.getElementById('root');
+      const root = ReactDOM.createRoot(container);
+      root.render(<MyApp />);
+
+        
+        </script>
+
+        <a href="https://www.purediablo.com/strategy/what-diablo-2-resurrected-items-to-keep#Budget_Merc_Gear">based on purediablo.com</a>
+        <!--
+      Note: this page is a great way to try React but it's not suitable for production.
+      It slowly compiles JSX with Babel in the browser and uses a large development build of React.
+
+      Read this page for starting a new React project with JSX:
+      https://react.dev/learn/start-a-new-react-project
+
+      Read this page for adding React with JSX to an existing project:
+      https://react.dev/learn/add-react-to-an-existing-project
+    -->
+
+
+        <script>
+            // tiers: 0 godly, 1 gg, 2 ultimate mf, 3 perf merc, 
+            // 4 epic melee, 5 master caster, 6 superior set, 
+            // 7 superior melee, 8 superior caster, 9 keep, 1000 trash
+            window.itemTiers = {
+                0: "godly",
+                1: "gg",
+                2: "ultimate mf",
+                3: "perf merc", 
+                4: "epic melee", 
+                5: "master caster",
+                6: "superior set", 
+                7: "superior melee", 
+                8: "superior caster", 
+                9: "keep", 
+                1000: "trash"
+            }
+            /* Scrape https://www.purediablo.com/strategy/what-diablo-2-resurrected-items-to-keep
+            by selecting ul and running
+
+            copy([...$0.children].map(c => c.innerText).map(t => ({ "tier": 0, "name": t.split(":")[0].trim().replace("’", "'"), "description": t.split(":")[1].trim(), "base": ""})))            
+            
+            for trash:
+            copy([...$0.children].map(c => c.innerText).map(t => ({ "tier": 1000, "name": t.trim().replace("’", "'"), "description":"", "base": ""})))
+            
+            */
+
+            
+            const itemsList = [
+// godly
+    {
+        "tier": 0,
+        "name": "Annihilus",
+        "description": "Diablo Clone’s unique small charm usable by any class with some of the most sought after stats",
+        "base": ""
+    },
+    {
+        "tier": 0,
+        "name": "Arachnid Mesh",
+        "description": "A caster belt with FCR and +skills and the only belt with both of those qualities",
+        "base": ""
+    },
+    {
+        "tier": 0,
+        "name": "Bul Kathos' Wedding Band",
+        "description": "SoJ Jr with +1 to skills in a ring",
+        "base": ""
+    },
+    {
+        "tier": 0,
+        "name": "Harlequin Crest",
+        "description": "The shako is extremely valuable and easily traded – magic find and +2 skills helm",
+        "base": ""
+    },
+    {
+        "tier": 0,
+        "name": "Hellfire Torch",
+        "description": "The only unique large charm and it provides a massive +3 to a classes skills and up to 20 Attributes and 20 All Res",
+        "base": ""
+    },
+    {
+        "tier": 0,
+        "name": "Mara's Kaleidoscope",
+        "description": "An amulet that provides not only +skills but also a nice +all res",
+        "base": ""
+    },
+    {
+        "tier": 0,
+        "name": "Rainbow Facet",
+        "description": "This unique jewel is used to get that last bit of damage for an end game Light and Cold build, but are much less valuable when it’s Fire or Poison.",
+        "base": ""
+    },
+    {
+        "tier": 0,
+        "name": "Skin of the Vipermagi",
+        "description": "+Skills, FCR, All Res on body armor and can be used by multiple builds",
+        "base": ""
+    },
+    {
+        "tier": 0,
+        "name": "The Stone of Jordan",
+        "description": "Probably the most sought after piece of jewelry in the game thanks to its +1 skills, low requirements and hefty mana boost",
+        "base": ""
+    },
+    {
+        "tier": 0,
+        "name": "Wisp Projector",
+        "description": "A rare drop and the only source of Lightning Absorb on a ring makes this very sought after",
+        "base": ""
+    },
+    {
+        "tier": 0,
+        "name": "War Traveler",
+        "description": "War Travs are the only unique boots with Magic Find and so they demand a hefty price",
+        "base": ""
+    },
+
+// GG
+                
+    {
+        "tier": 1,
+        "name": "Crown of Ages",
+        "description": "A hardcore staple or PVP BiS helm that provides unmatched FHR, DR, and All Res",
+        "base": ""
+    },
+    {
+        "tier": 1,
+        "name": "Death's Fathom",
+        "description": "BiS weapon for Cold Sorceress",
+        "base": ""
+    },
+    {
+        "tier": 1,
+        "name": "Death's Web",
+        "description": "BiS weapon for Poison Nova Necromancer",
+        "base": ""
+    },
+    {
+        "tier": 1,
+        "name": "Eschuta's Temper",
+        "description": "BiS weapon for Lighting or Fire Sorceress",
+        "base": ""
+    },
+    {
+        "tier": 1,
+        "name": "Griffon's Eye",
+        "description": "Reduces enemy Light resistance – perfect for Lightning Sorceress or Lightning Fury Javazon",
+        "base": ""
+    },
+    {
+        "tier": 1,
+        "name": "Nightwing's Veil",
+        "description": "BiS helmet for builds that use Cold damage",
+        "base": ""
+    },
+    {
+        "tier": 1,
+        "name": "Ormus' Robes",
+        "description": "Extremely tough to get the right stats for this robe, but if you find one with popular skills like Blizzard or Firewall, they can also be extremely valuable",
+        "base": ""
+    },
+    {
+        "tier": 1,
+        "name": "Tal Rasha's Adjudication",
+        "description": "The best MF amulet for Sorceress when combined with the other set pieces and also a rare find",
+        "base": ""
+    },
+    {
+        "tier": 1,
+        "name": "Tal Rasha's Guardianship",
+        "description": "Having a low drop rate makes this MF armor extremely valuable for any Sorceress",
+        "base": ""
+    },
+
+                // ultimate mf
+                
+    {
+        "tier": 2,
+        "name": "Blade of Ali Baba",
+        "description": "With 2 open sockets to add more MF through Ist runes and already sky high MF, this is an obviously good weapon to have on your weapon switch",
+        "base": ""
+    },
+    {
+        "tier": 2,
+        "name": "Chance Guards",
+        "description": "The only unique gloves with MF",
+        "base": ""
+    },
+    {
+        "tier": 2,
+        "name": "Gheed's Fortune",
+        "description": "The only unique Grand Charm in the game and like Chancies (Chance Guards) the rolls on this item will greatly affect its value. If you want to trade it, consider leaving it unidentified",
+        "base": ""
+    },
+    {
+        "tier": 2,
+        "name": "Goldwrap",
+        "description": "The only unique belt with Magic Find but a common drop, that makes it closer to Low Value.",
+        "base": ""
+    },
+    {
+        "tier": 2,
+        "name": "Nagelring",
+        "description": "BiS ring for any Magic Find build",
+        "base": ""
+    },
+    {
+        "tier": 2,
+        "name": "Skullder's Ire",
+        "description": "Until you can afford Enigma, this body armor is the best option for Magic Find you can find. Ethereal versions can be worth even more for your mercenary",
+        "base": ""
+    },
+    {
+        "tier": 2,
+        "name": "The Oculus",
+        "description": "BiS weapon for your MF Sorceress, known as ‘Occy’",
+        "base": ""
+    },
+
+                // perf merc
+                
+    {
+        "tier": 3,
+        "name": "Andariel's Visage",
+        "description": "BiS mercenary item for your Act 2 Mercenaries. Even without the Ethereal quality, it is always desirable",
+        "base": ""
+    },
+    {
+        "tier": 3,
+        "name": "Crown of Thieves",
+        "description": "The massive life steal and Fire Resist make it great for Act 2 mercs, but it’s a fairly common helmet",
+        "base": ""
+    },
+    {
+        "tier": 3,
+        "name": "Duriel's Shell",
+        "description": "Without the Ethereal quality, this is still one of the best early Merc Armors you can find",
+        "base": ""
+    },
+    {
+        "tier": 3,
+        "name": "Giant Skull",
+        "description": "A small use for Act 1 mercs, but this helm is mostly used for Bowazon builds",
+        "base": ""
+    },
+    {
+        "tier": 3,
+        "name": "Guillaume's Face",
+        "description": "Although technically a BiS for Zeal Paladin, it is also a great mercenary helmet in some situations",
+        "base": ""
+    },
+    {
+        "tier": 3,
+        "name": "Shaftstop",
+        "description": "This armor with the Ethereal quality is a highly valued merc item early in Ladder reset",
+        "base": ""
+    },
+    {
+        "tier": 3,
+        "name": "Stealskull",
+        "description": "One of the best MF helms for your mercenary that you can find",
+        "base": ""
+    },
+    {
+        "tier": 3,
+        "name": "The Reaper's Toll",
+        "description": "One of the best mercenary weapons available for Act 2 Mercenaries. Ethereal will net you a nice price",
+        "base": ""
+    },
+    {
+        "tier": 3,
+        "name": "Vampire Gaze",
+        "description": "Great helmet for many mercenaries with the Damage Reduction and Life steal",
+        "base": ""
+    },
+
+        // epic melee
+        
+
+    {
+        "tier": 4,
+        "name": "Dracul's Grasp",
+        "description": "Everything is great about these gloves on top of the 5% chance to cast Life Tap on striking",
+        "base": ""
+    },
+    {
+        "tier": 4,
+        "name": "Gore Rider",
+        "description": "Hands down one of the most desireable boots for a melee build",
+        "base": ""
+    },
+    {
+        "tier": 4,
+        "name": "Herald of Zakarum",
+        "description": "Just an all around solid shield for Paladins, who are one of the most popular classes in the game",
+        "base": ""
+    },
+    {
+        "tier": 4,
+        "name": "Highlord's Wrath",
+        "description": "Another amazing items for any character that needs Increased Attack Speed from their amulet",
+        "base": ""
+    },
+    {
+        "tier": 4,
+        "name": "Immortal King's Soul Cage",
+        "description": "One of the toughest set item pieces to find, but one of the best armors for our favorite Whirlwind Barbarian",
+        "base": ""
+    },
+    {
+        "tier": 4,
+        "name": "Metalgrid",
+        "description": "What Highlord’s is to IAS, Metalgrid is to AR. This is a great amulet for melee character who need AR",
+        "base": ""
+    },
+    {
+        "tier": 4,
+        "name": "Raven Frost",
+        "description": "A melee character needs Cannot Be Frozen and this is one of the best sources in a ring",
+        "base": ""
+    },
+    {
+        "tier": 4,
+        "name": "Ribcracker",
+        "description": "Can have insane damage when upgraded and Ethereal, but otherwise it’s a hard to trade weapon",
+        "base": ""
+    },
+    {
+        "tier": 4,
+        "name": "Sandstorm Trek",
+        "description": "These boots can be BiS for certain melee, PVP and hardcore builds and it is worth the price if it is Ethereal",
+        "base": ""
+    },
+    {
+        "tier": 4,
+        "name": "Shadow Dancer",
+        "description": "Highest damage boots for Kick Assassin",
+        "base": ""
+    },
+    {
+        "tier": 4,
+        "name": "Steelrend",
+        "description": "Very valuable for the Enhanced Damage in PVP",
+        "base": ""
+    },
+    {
+        "tier": 4,
+        "name": "Stormlash",
+        "description": "Fast attack builds like Zealot will do great with this weapon",
+        "base": ""
+    },
+    {
+        "tier": 4,
+        "name": "Tomb Reaver",
+        "description": "Although some will use as a merc weapon, with the right rolls this can be a godly weapon for Fury Druids",
+        "base": ""
+    },
+    {
+        "tier": 4,
+        "name": "Verdungo's Hearty Cord",
+        "description": "Damage reduction is king in PVP and this is a great belt for it",
+        "base": ""
+    },
+
+
+        // master caster
+
+        
+    {
+        "tier": 5,
+        "name": "Aldur's Advance",
+        "description": "If you are wielding Spirit sword and Shield, you probably are missing a great deal of Fire Resist. These boots will cover that for your caster build",
+        "base": ""
+    },
+    {
+        "tier": 5,
+        "name": "Boneflame",
+        "description": "A great off hand for Necromancers",
+        "base": ""
+    },
+    {
+        "tier": 5,
+        "name": "Boneshade",
+        "description": "With the right rolls, this offhand can be a BiS item for Bone Necros",
+        "base": ""
+    },
+    {
+        "tier": 5,
+        "name": "Homunculus",
+        "description": "Compared to Spirit, this offhand is just a little bit superior for Poison Nova Necromancers",
+        "base": ""
+    },
+    {
+        "tier": 5,
+        "name": "Magefist",
+        "description": "Back in the day, there was no better glove for casters. Still a great item if you are a Fire Sorceress",
+        "base": ""
+    },
+    {
+        "tier": 5,
+        "name": "Ondal's Wisdom",
+        "description": "When ladder becomes a rush for 99, expect this staff to go up in value – it is one of only 2 items in the game that grant extra experience gain",
+        "base": ""
+    },
+    {
+        "tier": 5,
+        "name": "Thunderstroke",
+        "description": "BiS javelin for killing Bosses and single target damage on Lightning Fury Amazon",
+        "base": ""
+    },
+    {
+        "tier": 5,
+        "name": "Titan's Revenge",
+        "description": "BiS javelin for Javazons, worth even more if it’s Ethereal and the most easily tradable in this category",
+        "base": ""
+    },
+
+
+
+
+        // superior set
+        
+    {
+        "tier": 6,
+        "name": "Angelic Halo + Angelic Wings",
+        "description": "Great levelling combo of rings and amulet for melee builds",
+        "base": ""
+    },
+    {
+        "tier": 6,
+        "name": "Immortal King's Stone Crusher",
+        "description": "Most barbs will try to make this set, and the Maul is an important piece, but still notable on its own",
+        "base": ""
+    },
+    {
+        "tier": 6,
+        "name": "Immortal King's Will",
+        "description": "Great for MF Barbs and very tradeable helmet early on",
+        "base": ""
+    },
+    {
+        "tier": 6,
+        "name": "Laying of Hands",
+        "description": "BiS gloves for many melee builds",
+        "base": ""
+    },
+    {
+        "tier": 6,
+        "name": "M'avina’s Caster + M’avina’s True Sight",
+        "description": "A somewhat rare drop for the bow and the headgear so it bumps this set up in value",
+        "base": ""
+    },
+    {
+        "tier": 6,
+        "name": "Natalya's Soul",
+        "description": "Great boots for a budget Kicksin",
+        "base": ""
+    },
+    {
+        "tier": 6,
+        "name": "Tal Rasha's Fine-Spun Cloth",
+        "description": "BiS belt for a MF Sorceress over Goldwrap when combined with other pieces of the set",
+        "base": ""
+    },
+    {
+        "tier": 6,
+        "name": "Trang-Oul's Claws",
+        "description": "Besides Magefist, the only other gloves in the game with Faster Cast Rate",
+        "base": ""
+    },
+    {
+        "tier": 6,
+        "name": "Trang-Oul's Girth",
+        "description": "Great budget PVP option to add Cannot Be Frozen",
+        "base": ""
+    },
+
+        // superior melee
+
+        
+    {
+        "tier": 7,
+        "name": "Arkaine's Valor",
+        "description": "Heavy armor that can get +2 skills for builds that benefit from that",
+        "base": ""
+    },
+    {
+        "tier": 7,
+        "name": "Arreat's Face",
+        "description": "Barbarian helmet that is usually BiS for most builds",
+        "base": ""
+    },
+    {
+        "tier": 7,
+        "name": "Cerebus' Bite",
+        "description": "Big boosts to AR, Life steal and Open Wounds make this a perfect melee helm for Druids",
+        "base": ""
+    },
+    {
+        "tier": 7,
+        "name": "Guardian Angel",
+        "description": "Can be a great armor for Hardcore or if you need to push those resists up even higher",
+        "base": ""
+    },
+    {
+        "tier": 7,
+        "name": "Heaven's Light",
+        "description": "Great scepter for Paladins and can command a high price with perfect rolls",
+        "base": ""
+    },
+    {
+        "tier": 7,
+        "name": "Lightsabre",
+        "description": "A decent weapon to level up melee characters upon reaching Hell",
+        "base": ""
+    },
+    {
+        "tier": 7,
+        "name": "Schaefer's Hammer",
+        "description": "For a Zealot without a Grief, this battle hammer is a great option",
+        "base": ""
+    },
+    {
+        "tier": 7,
+        "name": "Stormshield",
+        "description": "The ultimate defensive shield and an absolute staple of Hardcore builds",
+        "base": ""
+    },
+    {
+        "tier": 7,
+        "name": "String of Ears",
+        "description": "One of the only belts with Life steal and a top choice for melee characters",
+        "base": ""
+    },
+    {
+        "tier": 7,
+        "name": "Waterwalk",
+        "description": "These boots can help melee characters live to fight another day, but may be difficult to trade",
+        "base": ""
+    },
+
+// superior caster
+
+        
+    {
+        "tier": 8,
+        "name": "Darkforce Spawn",
+        "description": "Although it has some great bonuses, this necro off-hand is going to require perfect rolls to really make it valuable",
+        "base": ""
+    },
+    {
+        "tier": 8,
+        "name": "Head Hunter's Glory",
+        "description": "If you have a caster that is having trouble with ranged attacks, this is a perfect shield to give you a little more protection",
+        "base": ""
+    },
+    {
+        "tier": 8,
+        "name": "Jalal's Mane",
+        "description": "Although at first glance, this seems like a melee helm for Druids, it is actually BiS for most elemental Druids",
+        "base": ""
+    },
+    {
+        "tier": 8,
+        "name": "Kira's Guardian",
+        "description": "Some casters really don’t get much for resists in their gear and that’s where this circlet can provide a big boost",
+        "base": ""
+    },
+    {
+        "tier": 8,
+        "name": "Lacerator",
+        "description": "When it spawns as Ethereal, this winged axe is the BiS weapon for Throw Barbs",
+        "base": ""
+    },
+    {
+        "tier": 8,
+        "name": "Marrowwalk",
+        "description": "For summon Necromancer, this is BiS for the boot slot",
+        "base": ""
+    },
+    {
+        "tier": 8,
+        "name": "Razortail",
+        "description": "Can not find a better belt for the Lightning Fury Amazon",
+        "base": ""
+    },
+    {
+        "tier": 8,
+        "name": "Silkweave",
+        "description": "Great for casters that need a little more mana",
+        "base": ""
+    },
+    {
+        "tier": 8,
+        "name": "Thundergod's Vigor",
+        "description": "For Javzons that want a little higher single target damage, this is a great choice",
+        "base": ""
+    },
+    {
+        "tier": 8,
+        "name": "Warshrike",
+        "description": "Like the Lacerator, when it has the ethereal this thrown weapon can be a great choice for Throw Barbs",
+        "base": ""
+    },
+    {
+        "tier": 8,
+        "name": "Windforce",
+        "description": "BiS bow for the physical damage Bowazon",
+        "base": ""
+    },
+    {
+        "tier": 8,
+        "name": "Wizardspike",
+        "description": "Extremely powerful item for levelling on a caster class and highly tradable early on",
+        "base": ""
+    },
+
+        // others to keep
+        
+        // budget MF
+        
+    {
+        "tier": 9,
+        "name": "Cow King's Hide + Cow King’s Horns + Cow King’s Hooves",
+        "description": "Now that you can safely farm the Cow King, this is now a viable set for levelling and MF",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Gull",
+        "description": "Great MF weapon for your switch. At the start of ladder it can be worth something especially since it can be gambled from level 11 on in Normal",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Griswold's Valor",
+        "description": "A decent set item with some +Magic Find for a helm",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Milabrega's Orb",
+        "description": "Great early game MF shield",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Sander's Paragon",
+        "description": "Decent MF helmet until you can make Lore",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Tancred's Hobnails + Tancred’s Weird",
+        "description": "These 2 set items are a decent early game MF source",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Tarnhelm",
+        "description": "Until you can find Shako, this helmet is a great option for MF",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Vidala's Fetlock + Vidala’s Snare",
+        "description": "Similar to Tancred’s 2 piece MF option, but a little less MF",
+        "base": ""
+    },
+
+        // budget merc
+        
+    {
+        "tier": 9,
+        "name": "Azurewrath",
+        "description": "Very small usage for Act 3 or Act 5 mercenaries",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Boneflesh",
+        "description": "Nice for almost any merc",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Bonehew",
+        "description": "Positively BiS merc weapon until you can make your Insight",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Crow Caw",
+        "description": "Decent merc armor for the IAS",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Dark Glow",
+        "description": "Very low level armor with resist all",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Griswold's Heart",
+        "description": "Allows Act 2 merc to gain enough strength to equip a Colossus Voulge with PAmys in the sockets",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Haemosu's Adamant",
+        "description": "Ultimate armor in Budget column but low in the Value column",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Hawkmail",
+        "description": "Cannot Be Frozen armor is great for your Merc",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Hwanin's Justice",
+        "description": "A decent Act 2 merc weapon",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Kelpie Snare",
+        "description": "Amazing Act 2 weapon for the 75% Slow Target",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Leviathan",
+        "description": "High STR to use but a great defensive armor",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Rattlecage",
+        "description": "Good source of Crushing Blow for your merc",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Sazabi's Ghost Liberator",
+        "description": "Decent life and defense on this armor",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Spire of Honor",
+        "description": "Budget merc weapon",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Tal Rasha's Horadric Crest",
+        "description": "Ultimate helmet in Budget column but low in the Value column",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "The Battlebranch",
+        "description": "Another budget merc weapon",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "The Gladiator's Bane",
+        "description": "Can be a decent Merc armor with the Ethereal quality",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Undead Crown",
+        "description": "Even more budget helm for your merc then Tal’s",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Veil of Steel",
+        "description": "Stats and resists make this a great merc helm",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Witchwild String",
+        "description": "Can give Amplify Damage from your Act 1 mercenary",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Woestave",
+        "description": "Provides Open Wounds and Slow Target to your Act 2 mercenary",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Wormskull",
+        "description": "A strong life steal helmet for the early game",
+        "base": ""
+    },
+
+        // build around
+
+    {
+        "tier": 9,
+        "name": "Atma's Scarab",
+        "description": "A fantastic amulet for physical damage builds",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "The Cranium Basher",
+        "description": "A weapon for pure STR melee builds",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Buriza-Do Kyanon",
+        "description": "Can take Multi Shot Amazons through Hell",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Demon Limb",
+        "description": "Used as a buff weapon for Enchant",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Dwarf Star",
+        "description": "If you need a Gold Find ring, this is BiS",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Goblin Toe",
+        "description": "Absolute must have boots for a melee Ubers build",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Goldskin",
+        "description": "Really great armor for Gold Find builds",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Halaberd's Reign",
+        "description": "Great for Warcry Barbs",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Heart Carver",
+        "description": "Cheap Find Item source to let your Barb ‘hork’",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Hotspur",
+        "description": "The most insane mods for a level 5 pair of boots in the game",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Infernostride",
+        "description": "Great boots for Gold Finding",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Moser's Blessed Circle",
+        "description": "The Hardcore shield of choice",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Nature's Peace",
+        "description": "Used when farming Nihlathak",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Nightsmoke",
+        "description": "Used for its decent All Res on a belt",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Nokozan Relic",
+        "description": "50% Fire Resist on an amulet",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Peasant Crown",
+        "description": "Shako Jr with +1 to all skills",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Raven's Claw",
+        "description": "Very small demand as an Enchant rushing weapon",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Rune Master",
+        "description": "With the Ethereal quality it can be used for PVP",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "The Rising Sun",
+        "description": "Massive Fire Absorb amulet",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Saracen's Chance",
+        "description": "Great for adding stats or resistances to your character temporarily",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Seraph's Hymn",
+        "description": "This amulet can be used by any character who needs +2 Skills",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Silks of the Victor",
+        "description": "A +1 to Skills body armor",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Spellsteel",
+        "description": "Curious weapon that shows the creative side of Blizzard North, but aside from that it has Teleport",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Telling of Beads",
+        "description": "Offering +1 to Skills on an amulet",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "The Cat's Eye",
+        "description": "Highlord’s Jr for builds that need some IAS",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "The Eye of Etlich",
+        "description": "A throwback to Classic and a very low level amulet with +1 to skills",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Widowmaker",
+        "description": "A bow that gives Guided Arrow for use in PVP",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Wolfhowl",
+        "description": "The most build around item on this list – to build the Werewolf Barbarian of course",
+        "base": ""
+    },
+
+        // starter set
+    {
+        "tier": 9,
+        "name": "Arctic Binding + Arctic Furs + Arctic Horn + Arctic Mitts",
+        "description": "A very low level caster Set",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Berserker's Headgear + Berserker’s Hatchet + Berserker’s Hauberk",
+        "description": "A very low level melee Set",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Credendum",
+        "description": "Has some value for the All Res on a belt slot",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Death's Hand + Death’s Guard + Death’s Touch",
+        "description": "The 2 pieces of this set can provide Cannot be Frozen and 30 IAS",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Griswold's Honor + Griswold’s Redemption",
+        "description": "Combined with the helmet and armor above it can make a great set for Paladins",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Hsarus' Iron Fist + Hsarus’ Iron Heel + Hsarus’ Iron Stay",
+        "description": "A very low level Hardcore Set",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Hwanin's Blessing",
+        "description": "Adds a source of Prevent Monster Heal",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Immortal King's Detail + Immortal King’s Forge + Immortal King’s Pillar",
+        "description": "Great set with the other pieces above for many Barb builds",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Infernal Cranium + Infernal Sign + Infernal Torch",
+        "description": "Budget Necro set",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Iratha's Coil + Iratha’s Collar + Iratha’s Cord + Iratha’s Cuff",
+        "description": "Very solid Hardcore set in the early levels for the resists",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "M'avina’s Embrace + M’avina’s Icy Clutch + M’avina’s Tenet",
+        "description": "Combined with all of the pieces this can make a great set for Freezing Arrow Amazons",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Naj's Light Plate + Naj’s Puzzler",
+        "description": "Decent set but mainly used for the Teleport skill on the staff",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Natalya's Mark + Natalya’s Shadow + Natalya’s Totem",
+        "description": "Used by Kicksins as a nice starter set",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Sander's Paragon + Sander’s Riprap + Sander’s Superstition + Sander’s Taboo",
+        "description": "MF + Faster Run Walk + Skills make this a decent caster levelling set",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Sazabi's Mental Sheath",
+        "description": "Decent set helm for resistance and +Skills",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Sigon's Gage + Sigon’s Guard + Sigon’s Sabot + Sigon’s Shelter + Sigon’s Visor + Sigon’s Wrap",
+        "description": "This set is Nokk Approved – do not level your alt without it",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Trang-Oul's Guise + Trang-Oul’s Scales + Trang-Oul’s Wing",
+        "description": "With the other pieces, it’s a fine set for Poison Necromancers",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Whitstan's Guard",
+        "description": "A fantastic shield for Hardcore character due to high Chance to Block",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Wilhelm's Pride",
+        "description": "Dual leech belt",
+        "base": ""
+    },
+
+        // starter melee
+    {
+        "tier": 9,
+        "name": "Alma Negra",
+        "description": "Used by some Zealots",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Astreon's Iron Ward",
+        "description": "A scepter for Smiters",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Baranar's Star",
+        "description": "Great melee weapon for fresh Hell characters",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Bartuc's Cut-throat",
+        "description": "Not BiS for Assassin, but it can be used by multiple builds to level up",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Bloodfist",
+        "description": "BiS level up gloves",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Bloodtree Stump",
+        "description": "Good for Shapesifters and Whirlwind Barbs",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Bonesnap",
+        "description": "BiS level up weapon for WW Barbs and Shifters",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Butcher's Pupil",
+        "description": "Great early game Zealot weapon",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Crescent Moon",
+        "description": "Dual leech amulet",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Crushflange",
+        "description": "Ultra low level mace with insane mods",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Death Cleaver",
+        "description": "Good stand in until you can make Grief",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Doombringer",
+        "description": "Decent weapon that can clear Hell",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Fleshripper",
+        "description": "BiS weapon for a Kicksin",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Hellmouth",
+        "description": "Small use case for a Holy Fire Paladin",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Hellslayer",
+        "description": "Can take a Shapeshifter or WW Barb through Hell",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Jade Talon",
+        "description": "Almost like a shield for Dual Claw Assassins by providing a massive resist boost",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Lava Gout",
+        "description": "More useful version of Hellmouth gloves",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Magnus' Skin",
+        "description": "20 IAS gloves at a common drop",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Nosferatu's Coil",
+        "description": "String of Ears Jr with life leech on your belt",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Rixot's Keen",
+        "description": "Very low level weapon with Crushing Blow",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Rockfleece",
+        "description": "Nice levelling armor for you or your Merc",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Rockstopper",
+        "description": "Another great helmet for you or your Merc",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Soul Drainer",
+        "description": "Dual leech gloves",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Steelclash",
+        "description": "Low level shield for Paladins",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Tearhaunch",
+        "description": "A solid set of boots with All Res",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Templar's Might",
+        "description": "Pure STR Melee build armor",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "The Gnasher",
+        "description": "Budget Smiter weapon for the Crushing Blow",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "The Grandfather",
+        "description": "With the right rolls, this signature weapon can carry your character through Hell",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "The Hand of Broc",
+        "description": "Melee characters who need mana can benefit from these ultra low level gloves",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "The Redeemer",
+        "description": "Another strong Zealot weapon until Grief is available",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "The Spirit Shroud",
+        "description": "Good for leveling up with the +1 Skills",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Tiamat's Rebuke",
+        "description": "Adds a ton of elemental damage for a shield",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Twitchthroe",
+        "description": "20% IAS on body armor",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Tyrael's Might",
+        "description": "Excellent armor choice for trolling Holy Grail seekers",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Windhammer",
+        "description": "Great weapon for WW Bards and Fury Druids",
+        "base": ""
+    },
+
+        // starter caster
+    {
+        "tier": 9,
+        "name": "Arm of King Leoric",
+        "description": "Very useful wand for Necromancers",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Blackhand Key",
+        "description": "Great levelling wand for Necromancers",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Earthshaker",
+        "description": "Perfect Elemental Druid weapon",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Frostburn",
+        "description": "An iconic item from Classic, but still used today by Energy Shield Sorcs",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Gargoyle's Bite",
+        "description": "Fun for a Throw Barb",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Goldstrike Arch",
+        "description": "Possible to roll insane mods and carry your Amazon through Hell (if you upgrade it)",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Kuko Shakaku",
+        "description": "Good bow to level up your Bowazon",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Lidless Wall",
+        "description": "A perfect starter item until your caster can find a Spirit Monarch",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Maelstrom",
+        "description": "Decent early game wand for Necromancers",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Mang Song's Lesson",
+        "description": "Good for trolling players who are trying to complete their Holy Grail",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Que-Hegan's Wisdom",
+        "description": "Can be used for multiple builds due to FCR and Mana Per Kill",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Ravenlore",
+        "description": "BiS helmet for Fire Druid builds",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Razorswitch",
+        "description": "Budget option or starter choice until you can get Spirit runewords",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Spectral Shard",
+        "description": "Wizardspike Jr but still a nice option",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Spirit Ward",
+        "description": "Stormshield Jr if you need the Block and Resists",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Snowclash",
+        "description": "Another Classic D2 item, but sadly only rarely used by Blizz Sorcs",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Suicide Branch",
+        "description": "If not for Spirit dominating in the weapon slot, this would be a top tier wand. Still a great choice",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Tal Rasha's Lidless Eye",
+        "description": "Very seldom used outside of the entire set, but a good starter option if you find it",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "The Ward",
+        "description": "May be better than other early game shields",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Valkyrie Wing",
+        "description": "Can be a great starter helm for a Lightning Amazon",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Wall of the Eyeless",
+        "description": "The budget shield choice for a caster",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Warpspear",
+        "description": "A buff item for Energy Shield",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Wizendraw",
+        "description": "Very nice weapon for Freezing Arrow Amazons",
+        "base": ""
+    },
+    {
+        "tier": 9,
+        "name": "Wraith Flight",
+        "description": "Decent weapon for Throw Barbs",
+        "base": ""
+    },
+
+    {
+        "tier": 9,
+        "name": "Blood Crescent",
+        "description": "Low level melee weapon for act 1 and 2 normal",
+        "base": "Scimitar"
+    },        
+
+
+        // trash
+
+        
+    {
+        "tier": 1000,
+        "name": "Aldur's Deception + Aldur’s Rhythm +  Aldur’s Stony Gaze",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Angelic Mantle + Angelic Sickle",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Arcanna's Deathwand + Arcanna’s Flesh + Arcanna’s Head + Arcanna’s Sign",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Berserker's Hatchet + Berserker’s Hauberk",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Bul-Kathos' Sacred Charge + Bul-Kathos’ Tribal Guardian",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Cathan's Mesh + Cathan’s Rule + Cathan’s Seal + Cathan’s Sigil + Cathan’s Visage",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Civerb's Cudgel + Civerb’s Icon + Civerb’s Ward",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Cleglaw's Claw + Cleglaw’s Pincers + Cleglaw’s Tooth",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Taebaek's Glory + Dangoon’s Teaching + Ondal’s Almighty",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Dark Adherent + Rite of Passage",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Hwanin's Refuge + Hwanin’s Splendor",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Isenhart's Case + Isenhart’s Horns + Isenhart’s Lightbrand + Isenhart’s Parry",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Milabrega's Diadem + Milabrega’s Robe + Milabrega’s Rod",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Naj's Circlet",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Sazabi's Cobalt Redeemer",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Tancred's Crowbill + Tancred’s Skull + Tancred’s Spine",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Vidala's Ambush + Vidala’s Barb",
+        "description": "",
+        "base": ""
+    },
+
+
+
+    {
+        "tier": 1000,
+        "name": "Atma's Wail",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Biggin's Bonnet",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Black Hades",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Blackhorn's Face",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Blackoak Shield",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Bladebuckle",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Blinkbat's Form",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Bverrit Keep",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Coif of Glory",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Corpsemourn",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Darksight Helm",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Demonhorn's Edge",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Dragonscale",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Duskdeep",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Gerke's Sanctuary",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Ghoulhide",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Gravepalm",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Greyform",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Gloom's Trap",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Gorefoot",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Heavenly Garb",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Howltusk",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Iceblink",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Iron Pelt",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Lance Guard",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Lenymo",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Medusa's Gaze",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Pelta Lunata",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Skin of the Flayed One",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Snakecord",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Sparking Mail",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Spike Thorn",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Spirit Forge",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Spirit Keeper",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Steel Carapace",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Steelshade",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Stormchaser",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Stormguild",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Swordback Hold",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "The Centurion",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "The Face of Horror",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Toothrow",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Treads of Cthon",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Umbral Disk",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Viscerataunt",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Venom Grip",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Venom Ward",
+        "description": "",
+        "base": ""
+    },
+
+
+        
+    {
+        "tier": 1000,
+        "name": "Carrion Wind",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Manald Heal",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "The Mahim-Oak Curio",
+        "description": "",
+        "base": ""
+    },
+        
+
+    {
+        "tier": 1000,
+        "name": "Arioc's Needle",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Athena's Wrath",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Axe of Fechmar",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Bane Ash",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Baezil's Vortex",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Bing Sz Wang",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Blackbog's Sharp",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Blackleach Blade",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Blacktongue",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Bladebone",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Blastbark",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Blood Raven's Charge",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Bloodletter",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Bloodmoon",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Bloodthief",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Bloodrise",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Boneslayer Blade",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Brainhew",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Carin Shard",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Chromatic Ire",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Cliffkiller",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Cloudcrack",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Coldkill",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Coldsteel Eye",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Crainte Vomir",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Cranebeak",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Culwen's Point",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Dark Clan Crusher",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Deathbit",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Deathspade",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Demon's Arch",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Demon Machine",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Dimoak's Hew",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Djinn Slayer",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Doomslinger",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Eaglehorn",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Earth Shifter",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Endlesshail",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Ethereal Edge",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Executioner's Justice",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Felloak",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Firelizard's Talons",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Flamebellow",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Fleshrender",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Frostwind",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Gimmershred",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Ginther's Rift",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Ghostflame",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Gravenspine",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Grim's Burning Dead",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Griswold's Edge",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Gleamscythe",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Goreshovel",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Guardian Naga",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Gut Siphon",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Hand of Blessed Light",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Headstriker",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Hellcast",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Hellclap",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Hellrack",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Hellplague",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Hexfire",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Hone Sundan",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Horizon's Tornado",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Humongous",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Husoldal Evo",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Ichorsting",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Ironstone",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Islestrike",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Kinemil's Awl",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Knell Striker",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Lance of Yaggai",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Langer Briser",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Leadcrow",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Lycander's Aim",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Lycander's Flank",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Magewrath",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Messerschmidt's Reaver",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Moonfall",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Nord's Tenderizer",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Pierre Tombale Couant",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Plague Bearer",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Pluckeye",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Pompeii's Wrath",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Pus Spitter",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Radament's Sphere",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Rakescar",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Razor's Edge",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Razortine",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Riphook",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Ripsaw",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Rogue's Bow",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Rusthandle",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Serpent Lord",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Shadowfang",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Shadow Killer",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Skewer of Krintiz",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Skull Splitter",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Skystrike",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Skull Collector",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Soul Harvest",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Soulfeast Tine",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Soulflay",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Spineripper",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Spire of Lazarus",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Steel Pillar",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Steeldriver",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Steelgoad",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Stone Crusher",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Stoneraven",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Stormeye",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Stormrider",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Stormspike",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Stormspire",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Stormstrike",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Stoutnail",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Sureshrill Frost",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Swordguard",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "The Atlantean",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "The Chieftain",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "The Diggler",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "The Dragon Chang",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "The Fetid Sprinkler",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "The Gavel of Pain",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "The General's Tan Do Li Ga",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "The Grim Reaper",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "The Impaler",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "The Iron Jang Bong",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "The Jade Tan Do",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "The Meat Scraper",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "The Minotaur",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "The Patriarch",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "The Salamander",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "The Scalper",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "The Tannr Gorerod",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "The Vile Husk",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Todesfaelle Flamme",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Torch of Iro",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Ume's Lament",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Viperfork",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Warlord's Trust",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Witherstring",
+        "description": "",
+        "base": ""
+    },
+    {
+        "tier": 1000,
+        "name": "Zakarum's Hand",
+        "description": "",
+        "base": ""
+    }
+            ];
+            window.items = new Fuse(itemsList, {
+                keys: ["name"],
+                minMatchCharLength: 2,
+                shouldSort: true,
+                threshold: 0.3,
+            });
+        </script>
+    </body>
+</html>
